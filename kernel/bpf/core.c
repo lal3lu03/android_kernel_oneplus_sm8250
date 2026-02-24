@@ -914,8 +914,10 @@ void bpf_jit_binary_free(struct bpf_binary_header *hdr)
 {
 	u32 pages = hdr->pages;
 
+#ifdef CONFIG_ANDROID_VENDOR_HOOKS
 	trace_android_vh_set_memory_rw((unsigned long)hdr, pages);
 	trace_android_vh_set_memory_nx((unsigned long)hdr, pages);
+#endif
 	bpf_jit_free_exec(hdr);
 	bpf_jit_uncharge_modmem(pages);
 }

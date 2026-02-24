@@ -558,8 +558,7 @@ out_err:
  * purposes since there is no block device with a permanent mapping.
  */
 static int fuse_iomap_begin(struct inode *inode, loff_t pos, loff_t length,
-			    unsigned int flags, struct iomap *iomap,
-			    struct iomap *srcmap)
+			    unsigned int flags, struct iomap *iomap)
 {
 	struct fuse_inode *fi = get_fuse_inode(inode);
 	struct fuse_conn *fc = get_fuse_conn(inode);
@@ -672,7 +671,7 @@ static int __fuse_dax_break_layouts(struct inode *inode, bool *retry,
 {
 	struct page *page;
 
-	page = dax_layout_busy_page_range(inode->i_mapping, start, end);
+	page = dax_layout_busy_page(inode->i_mapping);
 	if (!page)
 		return 0;
 
@@ -785,7 +784,7 @@ static int fuse_dax_writepages(struct address_space *mapping,
 	struct inode *inode = mapping->host;
 	struct fuse_conn *fc = get_fuse_conn(inode);
 
-	return dax_writeback_mapping_range(mapping, fc->dax->dev, wbc);
+	return dax_writeback_mapping_range(mapping, NULL, wbc);
 }
 
 static vm_fault_t __fuse_dax_fault(struct vm_fault *vmf,

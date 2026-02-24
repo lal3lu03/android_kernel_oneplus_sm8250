@@ -129,7 +129,9 @@ static inline void page_pool_put_page(struct page_pool *pool,
 static inline void page_pool_recycle_direct(struct page_pool *pool,
 					    struct page *page)
 {
+#ifdef CONFIG_PAGE_POOL
 	__page_pool_put_page(pool, page, true);
+#endif
 }
 
 /* Disconnects a page (from a page_pool).  API users can have a need
@@ -137,7 +139,12 @@ static inline void page_pool_recycle_direct(struct page_pool *pool,
  * a regular page (that will eventually be returned to the normal
  * page-allocator via put_page).
  */
+#ifdef CONFIG_PAGE_POOL
 void page_pool_unmap_page(struct page_pool *pool, struct page *page);
+#else
+static inline void page_pool_unmap_page(struct page_pool *pool, struct page *page) { }
+#endif
+
 static inline void page_pool_release_page(struct page_pool *pool,
 					  struct page *page)
 {

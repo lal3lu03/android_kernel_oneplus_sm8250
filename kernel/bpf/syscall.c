@@ -4406,7 +4406,9 @@ SYSCALL_DEFINE3(bpf, int, cmd, union bpf_attr __user *, uattr, unsigned int, siz
 	if (copy_from_user(&attr, uattr, size) != 0)
 		return -EFAULT;
 
+#ifdef CONFIG_ANDROID_VENDOR_HOOKS
 	trace_android_vh_check_bpf_syscall(cmd, &attr, size);
+#endif
 
 	err = security_bpf(cmd, &attr, size);
 	if (err < 0)

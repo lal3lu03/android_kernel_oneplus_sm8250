@@ -419,17 +419,7 @@ static inline bool tcp_urg_mode(const struct tcp_sock *tp)
 
 static void smc_options_write(__be32 *ptr, u16 *options)
 {
-#if IS_ENABLED(CONFIG_SMC)
-	if (static_branch_unlikely(&tcp_have_smc)) {
-		if (unlikely(OPTION_SMC & *options)) {
-			*ptr++ = htonl((TCPOPT_NOP  << 24) |
-				       (TCPOPT_NOP  << 16) |
-				       (TCPOPT_EXP <<  8) |
-				       (TCPOLEN_EXP_SMC_BASE));
-			*ptr++ = htonl(TCPOPT_SMC_MAGIC);
-		}
-	}
-#endif
+	/* SMC disabled - CONFIG_SMC not enabled */
 }
 
 struct tcp_out_options {
@@ -697,16 +687,7 @@ static void smc_set_option(const struct tcp_sock *tp,
 			   struct tcp_out_options *opts,
 			   unsigned int *remaining)
 {
-#if IS_ENABLED(CONFIG_SMC)
-	if (static_branch_unlikely(&tcp_have_smc)) {
-		if (tp->syn_smc) {
-			if (*remaining >= TCPOLEN_EXP_SMC_BASE_ALIGNED) {
-				opts->options |= OPTION_SMC;
-				*remaining -= TCPOLEN_EXP_SMC_BASE_ALIGNED;
-			}
-		}
-	}
-#endif
+	/* SMC disabled - CONFIG_SMC not enabled */
 }
 
 static void smc_set_option_cond(const struct tcp_sock *tp,
@@ -714,16 +695,7 @@ static void smc_set_option_cond(const struct tcp_sock *tp,
 				struct tcp_out_options *opts,
 				unsigned int *remaining)
 {
-#if IS_ENABLED(CONFIG_SMC)
-	if (static_branch_unlikely(&tcp_have_smc)) {
-		if (tp->syn_smc && ireq->smc_ok) {
-			if (*remaining >= TCPOLEN_EXP_SMC_BASE_ALIGNED) {
-				opts->options |= OPTION_SMC;
-				*remaining -= TCPOLEN_EXP_SMC_BASE_ALIGNED;
-			}
-		}
-	}
-#endif
+	/* SMC disabled - CONFIG_SMC not enabled */
 }
 
 /* Compute TCP options for SYN packets. This is not the final

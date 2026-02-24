@@ -15,6 +15,13 @@ struct mmu_notifier_ops;
 /* mmu_notifier_ops flags */
 #define MMU_INVALIDATE_DOES_NOT_BLOCK	(0x01)
 
+/* mmu_notifier event types - simplified for compatibility */
+#define MMU_NOTIFY_UNMAP		0
+#define MMU_NOTIFY_CLEAR		1
+#define MMU_NOTIFY_PROTECTION_VMA	2
+#define MMU_NOTIFY_PROTECTION_PAGE	3
+#define MMU_NOTIFY_SOFT_DIRTY		4
+
 #ifdef CONFIG_MMU_NOTIFIER
 
 /*
@@ -343,7 +350,7 @@ static inline void mmu_notifier_mm_destroy(struct mm_struct *mm)
 
 
 static inline void mmu_notifier_range_init(struct mmu_notifier_range *range,
-					   enum mmu_notifier_event event,
+					   unsigned int event,
 					   unsigned flags,
 					   struct vm_area_struct *vma,
 					   struct mm_struct *mm,

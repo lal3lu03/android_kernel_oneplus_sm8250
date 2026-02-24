@@ -428,18 +428,10 @@ static void smc_check_reset_syn_req(struct tcp_sock *oldtp,
 				    struct request_sock *req,
 				    struct tcp_sock *newtp)
 {
-#if IS_ENABLED(CONFIG_SMC)
-	struct inet_request_sock *ireq;
-
-	if (static_branch_unlikely(&tcp_have_smc)) {
-		ireq = inet_rsk(req);
-		if (oldtp->syn_smc && !ireq->smc_ok)
-			newtp->syn_smc = 0;
-	}
-#endif
+	/* SMC disabled - CONFIG_SMC not enabled */
 }
 
-/* This is not only more efficient than what we used to do, it eliminates
+/*
  * a lot of code duplication between IPv4/IPv6 SYN recv processing. -DaveM
  *
  * Actually, we could lots of memory writes here. tp of listening

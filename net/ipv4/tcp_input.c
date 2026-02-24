@@ -112,30 +112,7 @@ int sysctl_tcp_max_orphans __read_mostly = NR_FILE;
 #define REXMIT_LOST	1 /* retransmit packets marked lost */
 #define REXMIT_NEW	2 /* FRTO-style transmit of unsent/new packets */
 
-#if IS_ENABLED(CONFIG_TLS_DEVICE)
-static DEFINE_STATIC_KEY_DEFERRED_FALSE(clean_acked_data_enabled, HZ);
-
-void clean_acked_data_enable(struct inet_connection_sock *icsk,
-			     void (*cad)(struct sock *sk, u32 ack_seq))
-{
-	icsk->icsk_clean_acked = cad;
-	static_branch_inc(&clean_acked_data_enabled.key);
-}
-EXPORT_SYMBOL_GPL(clean_acked_data_enable);
-
-void clean_acked_data_disable(struct inet_connection_sock *icsk)
-{
-	static_branch_slow_dec_deferred(&clean_acked_data_enabled);
-	icsk->icsk_clean_acked = NULL;
-}
-EXPORT_SYMBOL_GPL(clean_acked_data_disable);
-
-void clean_acked_data_flush(void)
-{
-	static_key_deferred_flush(&clean_acked_data_enabled);
-}
-EXPORT_SYMBOL_GPL(clean_acked_data_flush);
-#endif
+/* CONFIG_TLS_DEVICE clean_acked_data functionality disabled - not available on this build */
 
 #ifdef CONFIG_CGROUP_BPF
 static void bpf_skops_parse_hdr(struct sock *sk, struct sk_buff *skb)
@@ -3747,12 +3724,7 @@ static int tcp_ack(struct sock *sk, const struct sk_buff *skb, int flag)
 	if (after(ack, prior_snd_una)) {
 		flag |= FLAG_SND_UNA_ADVANCED;
 		icsk->icsk_retransmits = 0;
-
-#if IS_ENABLED(CONFIG_TLS_DEVICE)
-		if (static_branch_unlikely(&clean_acked_data_enabled.key))
-			if (icsk->icsk_clean_acked)
-				icsk->icsk_clean_acked(sk, ack);
-#endif
+		/* TLS device clean acked data hook disabled when CONFIG_TLS_DEVICE=n */
 	}
 
 	prior_fack = tcp_is_sack(tp) ? tcp_highest_sack_seq(tp) : tp->snd_una;
@@ -3914,21 +3886,16 @@ static bool smc_parse_options(const struct tcphdr *th,
 			      const unsigned char *ptr,
 			      int opsize)
 {
-#if IS_ENABLED(CONFIG_SMC)
-	if (static_branch_unlikely(&tcp_have_smc)) {
-		if (th->syn && !(opsize & 1) &&
-		    opsize >= TCPOLEN_EXP_SMC_BASE &&
-		    get_unaligned_be32(ptr) == TCPOPT_SMC_MAGIC) {
-			opt_rx->smc_ok = 1;
-			return true;
-		}
-	}
-#endif
+	/* SMC (Shared Memory Communications) disabled - CONFIG_SMC not enabled */
 	return false;
 }
 
-/* Try to parse the MSS option from the TCP header. Return 0 on failure, clamped
- * value on success.
+/**
+ * tcp_parse_mss_option() - Parse TCP MSS option.
+ * @th: Pointer to TCP header
+ * @user_mss: User-specified MSS value
+ *
+ * Return: MSS value on success.
  */
 static u16 tcp_parse_mss_option(const struct tcphdr *th, u16 user_mss)
 {
@@ -6012,12 +5979,7 @@ static bool tcp_rcv_fastopen_synack(struct sock *sk, struct sk_buff *synack,
 
 static void smc_check_reset_syn(struct tcp_sock *tp)
 {
-#if IS_ENABLED(CONFIG_SMC)
-	if (static_branch_unlikely(&tcp_have_smc)) {
-		if (tp->syn_smc && !tp->rx_opt.smc_ok)
-			tp->syn_smc = 0;
-	}
-#endif
+	/* SMC disabled - CONFIG_SMC not enabled */
 }
 
 static void tcp_try_undo_spurious_syn(struct sock *sk)

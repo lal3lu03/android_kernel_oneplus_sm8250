@@ -533,7 +533,7 @@ int fib_nh_init(struct net *net, struct fib_nh *nh,
 		net->ipv4.fib_num_tclassid_users++;
 #endif
 #ifdef CONFIG_IP_ROUTE_MULTIPATH
-	nh->nh_weight = nh_weight;
+	nh->fib_nh_weight = nh_weight;
 #endif
 	return 0;
 }
@@ -615,12 +615,12 @@ static int fib_get_nhs(struct fib_info *fi, struct rtnexthop *rtnh,
 	} endfor_nexthops(fi);
 
 	ret = -EINVAL;
-	if (cfg->fc_oif && fi->fib_nh->nh_oif != cfg->fc_oif) {
+	if (cfg->fc_oif && fi->fib_nh->fib_nh_oif != cfg->fc_oif) {
 		NL_SET_ERR_MSG(extack,
 			       "Nexthop device index does not match RTA_OIF");
 		goto errout;
 	}
-	if (cfg->fc_gw && fi->fib_nh->nh_gw != cfg->fc_gw) {
+	if (cfg->fc_gw && fi->fib_nh->fib_nh_gw4 != cfg->fc_gw) {
 		NL_SET_ERR_MSG(extack,
 			       "Nexthop gateway does not match RTA_GATEWAY");
 		goto errout;

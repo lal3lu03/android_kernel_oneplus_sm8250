@@ -161,11 +161,7 @@ static int __init lockdown_secfs_init(void)
 
 core_initcall(lockdown_secfs_init);
 
-#ifdef CONFIG_SECURITY_LOCKDOWN_LSM_EARLY
-DEFINE_EARLY_LSM(lockdown) = {
-#else
 DEFINE_LSM(lockdown) = {
-#endif
 	.name = "lockdown",
 	.init = lockdown_lsm_init,
 };

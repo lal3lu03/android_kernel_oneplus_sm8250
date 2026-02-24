@@ -2850,18 +2850,10 @@ static int gpiod_get_raw_value_commit(const struct gpio_desc *desc)
 	value = value < 0 ? value : !!value;
 	trace_gpio_value(desc_to_gpio(desc), 1, value);
 #else
-	if (oplus_vooc_adapter_update_is_rx_gpio(desc_to_gpio(desc))) {
-		if (chip->get_oplus_vooc) {
-			value = chip->get_oplus_vooc(chip, offset);
-		} else {
-			pr_err("%s get_oplus_vooc not exist\n", __func__);
-			value = chip->get ? chip->get(chip, offset) : 0;
-		}
-	} else {
-		value = chip->get ? chip->get(chip, offset) : -EIO;
-		value = !!value;
-		trace_gpio_value(desc_to_gpio(desc), 1, value);
-	}
+	// oplus_vooc_adapter_update_is_rx_gpio function not available - using standard path
+	value = chip->get ? chip->get(chip, offset) : -EIO;
+	value = value < 0 ? value : !!value;
+	trace_gpio_value(desc_to_gpio(desc), 1, value);
 #endif /* OPLUS_FEATURE_CHG_BASIC */
 	return value;
 }
@@ -3101,18 +3093,9 @@ static void gpiod_set_raw_value_commit(struct gpio_desc *desc, bool value)
 	trace_gpio_value(desc_to_gpio(desc), 0, value);
 	chip->set(chip, gpio_chip_hwgpio(desc), value);
 #else
-	if (oplus_vooc_adapter_update_is_tx_gpio(desc_to_gpio(desc))) {
-		if (chip->set_oplus_vooc) {
-			chip->set_oplus_vooc(chip, gpio_chip_hwgpio(desc),
-					     value);
-		} else {
-			pr_err("%s set_oplus_vooc not exist\n", __func__);
-			chip->set(chip, gpio_chip_hwgpio(desc), value);
-		}
-	} else {
-		trace_gpio_value(desc_to_gpio(desc), 0, value);
-		chip->set(chip, gpio_chip_hwgpio(desc), value);
-	}
+	// oplus_vooc_adapter_update_is_tx_gpio function not available - using standard path
+	trace_gpio_value(desc_to_gpio(desc), 0, value);
+	chip->set(chip, gpio_chip_hwgpio(desc), value);
 #endif /* OPLUS_FEATURE_CHG_BASIC */
 }
 

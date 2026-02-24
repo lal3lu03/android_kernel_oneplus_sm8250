@@ -801,7 +801,9 @@ static int do_dentry_open(struct file *f,
 		error = -ENODEV;
 		goto cleanup_all;
 	}
+#ifdef CONFIG_ANDROID_VENDOR_HOOKS
 	trace_android_vh_check_file_open(f);
+#endif
 
 	error = security_file_open(f);
 	if (error)

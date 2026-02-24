@@ -67,12 +67,12 @@ obj-$(CONFIG_SYSCTL)		+= sysctl_net.o
 endif
 obj-$(CONFIG_WIMAX)		+= wimax/
 obj-$(CONFIG_DNS_RESOLVER)	+= dns_resolver/
-obj-$(CONFIG_CEPH_LIB)		+= ceph/
+# obj-$(CONFIG_CEPH_LIB)		+= ceph/  # Disabled: Ceph distributed storage not needed for smartphone
 obj-$(CONFIG_BATMAN_ADV)	+= batman-adv/
 obj-$(CONFIG_NFC)		+= nfc/
 obj-$(CONFIG_PSAMPLE)		+= psample/
 obj-$(CONFIG_NET_IFE)		+= ife/
-obj-$(CONFIG_OPENVSWITCH)	+= openvswitch/
+# obj-$(CONFIG_OPENVSWITCH)	+= openvswitch/
 obj-$(CONFIG_VSOCKETS)	+= vmw_vsock/
 obj-$(CONFIG_MPLS)		+= mpls/
 obj-$(CONFIG_NET_NSH)		+= nsh/

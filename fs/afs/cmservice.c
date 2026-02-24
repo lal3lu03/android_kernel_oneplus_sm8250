@@ -612,13 +612,12 @@ static int afs_deliver_yfs_cb_callback(struct afs_call *call)
 
 	switch (call->unmarshall) {
 	case 0:
-		afs_extract_to_tmp(call);
 		call->unmarshall++;
 
 		/* extract the FID array and its count in two steps */
 	case 1:
 		_debug("extract FID count");
-		ret = afs_extract_data(call, true);
+		ret = afs_extract_data(call, &call->tmp, sizeof(call->tmp), true);
 		if (ret < 0)
 			return ret;
 
@@ -632,12 +631,11 @@ static int afs_deliver_yfs_cb_callback(struct afs_call *call)
 		call->buffer = kmalloc(size, GFP_KERNEL);
 		if (!call->buffer)
 			return -ENOMEM;
-		afs_extract_to_buf(call, size);
 		call->unmarshall++;
 
 	case 2:
 		_debug("extract FID array");
-		ret = afs_extract_data(call, false);
+		ret = afs_extract_data(call, call->buffer, size, false);
 		if (ret < 0)
 			return ret;
 
@@ -658,7 +656,6 @@ static int afs_deliver_yfs_cb_callback(struct afs_call *call)
 			bp++;
 		}
 
-		afs_extract_to_tmp(call);
 		call->unmarshall++;
 
 	case 3:

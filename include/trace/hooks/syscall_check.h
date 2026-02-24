@@ -11,6 +11,7 @@
  * Following tracepoints are not exported in tracefs and provide a
  * mechanism for vendor modules to hook and extend functionality
  */
+#ifdef CONFIG_ANDROID_VENDOR_HOOKS
 struct file;
 union bpf_attr;
 DECLARE_HOOK(android_vh_check_mmap_file,
@@ -25,6 +26,7 @@ DECLARE_HOOK(android_vh_check_file_open,
 DECLARE_HOOK(android_vh_check_bpf_syscall,
 	TP_PROTO(int cmd, const union bpf_attr *attr, unsigned int size),
 	TP_ARGS(cmd, attr, size));
+#endif /* CONFIG_ANDROID_VENDOR_HOOKS */
 
 #endif /* _TRACE_HOOK_SYSCALL_CHECK_H */
 /* This part must be outside protection */

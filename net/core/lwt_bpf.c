@@ -96,8 +96,30 @@ static int bpf_lwt_input_reroute(struct sk_buff *skb)
 					   iph->tos, dev);
 		dev_put(dev);
 	} else if (skb->protocol == htons(ETH_P_IPV6)) {
+		struct net_device *dev = skb_dst(skb)->dev;
+		struct ipv6hdr *iph6 = ipv6_hdr(skb);
+		struct dst_entry *dst;
+		struct flowi6 fl6 = {};
+
+		dev_hold(dev);
 		skb_dst_drop(skb);
-		err = ipv6_stub->ipv6_route_input(skb);
+
+		fl6.flowi6_iif = dev->ifindex;
+		fl6.daddr = iph6->daddr;
+		fl6.saddr = iph6->saddr;
+		fl6.flowlabel = ip6_flowinfo(iph6);
+		fl6.flowi6_mark = skb->mark;
+		fl6.flowi6_proto = iph6->nexthdr;
+
+		dst = ipv6_stub->ipv6_dst_lookup_flow(dev_net(dev), NULL, &fl6, NULL);
+		dev_put(dev);
+
+		if (IS_ERR(dst)) {
+			err = PTR_ERR(dst);
+		} else {
+			skb_dst_set(skb, dst);
+			err = 0;
+		}
 	} else {
 		err = -EAFNOSUPPORT;
 	}
@@ -227,9 +249,12 @@ static int bpf_lwt_xmit_reroute(struct sk_buff *skb)
 		fl6.daddr = iph6->daddr;
 		fl6.saddr = iph6->saddr;
 
-		err = ipv6_stub->ipv6_dst_lookup(net, skb->sk, &dst, &fl6);
-		if (unlikely(err))
+		dst = ipv6_stub->ipv6_dst_lookup_flow(net, skb->sk, &fl6, NULL);
+		if (IS_ERR(dst)) {
+			err = PTR_ERR(dst);
 			goto err;
+		}
+		err = 0;
 		if (IS_ERR(dst)) {
 			err = PTR_ERR(dst);
 			goto err;

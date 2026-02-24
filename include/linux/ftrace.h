@@ -322,7 +322,7 @@ extern unsigned long stack_trace_max_size;
 extern arch_spinlock_t stack_trace_max_lock;
 
 extern int stack_tracer_enabled;
-void stack_trace_print(void);
+/* Removed conflicting 'void stack_trace_print(void);' - correct signature is in stacktrace.h */
 int
 stack_trace_sysctl(struct ctl_table *table, int write,
 		   void __user *buffer, size_t *lenp,

@@ -943,8 +943,10 @@ skip_init_ctx:
 			goto out_off;
 		}
 		bpf_jit_binary_lock_ro(header);
+#ifdef CONFIG_ANDROID_VENDOR_HOOKS
 		trace_android_vh_set_memory_ro((unsigned long)header, header->pages);
 		trace_android_vh_set_memory_x((unsigned long)header, header->pages);
+#endif
 	} else {
 		jit_data->ctx = ctx;
 		jit_data->image = image_ptr;

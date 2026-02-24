@@ -659,7 +659,7 @@ struct dev_dax *devm_create_dev_dax(struct dax_region *dax_region,
 	 * No 'host' or dax_operations since there is no access to this
 	 * device outside of mmap of the resulting character device.
 	 */
-	dax_dev = alloc_dax(dev_dax, NULL, NULL);
+	dax_dev = alloc_dax(dev_dax, NULL, NULL, 0);
 	if (!dax_dev) {
 		rc = -ENOMEM;
 		goto err_dax;

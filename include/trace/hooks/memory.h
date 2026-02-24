@@ -11,6 +11,7 @@
  * Following tracepoints are not exported in tracefs and provide a
  * mechanism for vendor modules to hook and extend functionality
  */
+#ifdef CONFIG_ANDROID_VENDOR_HOOKS
 DECLARE_HOOK(android_vh_set_memory_x,
 	TP_PROTO(unsigned long addr, int nr_pages),
 	TP_ARGS(addr, nr_pages));
@@ -26,6 +27,7 @@ DECLARE_HOOK(android_vh_set_memory_ro,
 DECLARE_HOOK(android_vh_set_memory_rw,
 	TP_PROTO(unsigned long addr, int nr_pages),
 	TP_ARGS(addr, nr_pages));
+#endif /* CONFIG_ANDROID_VENDOR_HOOKS */
 
 #endif /* _TRACE_HOOK_MEMORY_H */
 /* This part must be outside protection */

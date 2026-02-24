@@ -9,6 +9,10 @@
 #include <net/tcp.h>
 #include <net/tls.h>
 
+#if IS_ENABLED(CONFIG_BPF_STREAM_PARSER)
+static struct sk_psock *sk_psock_from_strp(struct strparser *strp);
+#endif
+
 static bool sk_msg_try_coalesce_ok(struct sk_msg *msg, int elem_first_coalesce)
 {
 	if (msg->sg.end > msg->sg.start &&

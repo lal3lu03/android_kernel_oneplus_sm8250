@@ -397,7 +397,9 @@ unsigned long vm_mmap_pgoff(struct file *file, unsigned long addr,
 		if (populate)
 			mm_populate(ret, populate);
 	}
+#ifdef CONFIG_ANDROID_VENDOR_HOOKS
 	trace_android_vh_check_mmap_file(file, prot, flag, ret);
+#endif
 	return ret;
 }
 

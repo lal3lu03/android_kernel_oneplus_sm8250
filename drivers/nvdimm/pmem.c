@@ -282,9 +282,9 @@ static int pmem_dax_zero_page_range(struct dax_device *dax_dev, pgoff_t pgoff,
 {
 	struct pmem_device *pmem = dax_get_private(dax_dev);
 
-	return blk_status_to_errno(pmem_do_write(pmem, ZERO_PAGE(0), 0,
-				   PFN_PHYS(pgoff) >> SECTOR_SHIFT,
-				   PAGE_SIZE));
+	return blk_status_to_errno(pmem_do_bvec(pmem, ZERO_PAGE(0),
+				   PAGE_SIZE, 0, REQ_OP_WRITE,
+				   PFN_PHYS(pgoff) >> SECTOR_SHIFT));
 }
 
 static long pmem_dax_direct_access(struct dax_device *dax_dev,
