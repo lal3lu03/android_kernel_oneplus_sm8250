@@ -274,8 +274,6 @@
 		"RX_TX DEC1_INP", "TX DEC1 MUX",
 		"RX_TX DEC2_INP", "TX DEC2 MUX",
 		"RX_TX DEC3_INP", "TX DEC3 MUX",
-		"SpkrLeft IN", "WSA_SPK1 OUT",
-		"SpkrRight IN", "WSA_SPK2 OUT",
 		"VA_AIF1 CAP", "VA_SWR_CLK",
 		"VA_AIF2 CAP", "VA_SWR_CLK",
 		"VA_AIF3 CAP", "VA_SWR_CLK",
@@ -328,14 +326,13 @@
 	qcom,msm-mbhc-hs-mic-min-threshold-mv = <75>;
 	oplus,mbhc-check-cross-conn = <0>;
 	qcom,msm-mbhc-usbc-audio-supported = <1>;
+	qcom,tdm-max-slots = <8>;
 	oplus,mbhc-check-irq-en = <1>;
 	oplus,mbhc-headset-bias-alwayon = <1>;
 	oplus,mbhc-use-usbc-detect = <1>;
-	qcom,wsa-max-devs = <0>;
-	qcom,wsa-devs = <&wsa881x_0211>, <&wsa881x_0212>,
-			<&wsa881x_0213>, <&wsa881x_0214>;
-	qcom,wsa-aux-dev-prefix = "SpkrLeft", "SpkrRight",
-				  "SpkrLeft", "SpkrRight";
+	qcom,wsa-max-devs = <2>;
+	qcom,wsa-devs = <&tfa98xx_34>, <&tfa98xx_35>;
+	qcom,wsa-aux-dev-prefix = "SpkrLeft", "SpkrRight";
 	qcom,codec-max-aux-devs = <1>;
 	qcom,codec-aux-devs = <&wcd938x_codec>;
 	qcom,msm_audio_ssr_devs = <&audio_apr>, <&q6core>, <&lpi_tlmm>,
@@ -395,9 +392,7 @@
 		qcom,lpi-gpios;
 		qcom,tlmm-gpio = <147>;
 	};
-};
 
-&soc {
 	cdc_tert_mi2s_gpios: msm_cdc_pinctrl_tert{
 		compatible = "qcom,msm-cdc-pinctrl";
 		pinctrl-names = "aud_active", "aud_sleep";
@@ -427,7 +422,9 @@
 		pinctrl-0 = <&wcd938x_reset_active>;
 		pinctrl-1 = <&wcd938x_reset_sleep>;
 	};
+};
 
+&soc {
 	clock_audio_wsa_1: wsa_core_clk {
 		compatible = "qcom,audio-ref-clk";
 		qcom,codec-ext-clk-src = <AUDIO_LPASS_MCLK_2>;
@@ -497,6 +494,7 @@
 	oplus,audio-drv {
 		compatible = "oplus,asoc-audio";
 		oplus,speaker-vendor = "nxp";
+		oplus,dac-vendor = "none";
 		oplus,speaker-i2s-id = <2>;
 		oplus,speaker-codec-name = "tfa98xx.2-0035", "tfa98xx.2-0034";
 		oplus,speaker-codec-dai-name = "tfa98xx-aif-2-35", "tfa98xx-aif-2-34";
@@ -504,7 +502,7 @@
 };
 
 &qupv3_se15_i2c {
-	tfa98xx@34 {
+	tfa98xx_34: tfa98xx@34 {
 		compatible = "nxp,tfa98xx";
 		reg = <0x34>;
 		tfa9874_vdd-supply = <&pm8150_s4>;
@@ -512,10 +510,12 @@
 		tfa_min_range = <5000>;
 		tfa_max_range = <8000>;
 		tfa_channel = <0>;
+		tfa_use_i2s = <2>;
+		oneplus,tfa_i2s_id = <2>;
 		status = "ok";
 	};
 
-	tfa98xx@35 {
+	tfa98xx_35: tfa98xx@35 {
 		compatible = "nxp,tfa98xx";
 		reg = <0x35>;
 		tfa9874_vdd-supply = <&pm8150_s4>;
@@ -523,6 +523,8 @@
 		tfa_min_range = <5000>;
 		tfa_max_range = <8000>;
 		tfa_channel = <1>;
+		tfa_use_i2s = <2>;
+		oneplus,tfa_i2s_id = <2>;
 		status = "ok";
 	};
 };

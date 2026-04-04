@@ -178,7 +178,6 @@ static enum Tfa98xx_Error tfa9874_calibrate(struct tfa98xx *tfa98xx,
 
 extern int send_tfa_cal_apr(void *buf, int cmd_size, bool bRead);
 int set_tfa_i2s(u32 tfa_i2s);
-static int (*extend_set_tfa_i2s)(u32 tfa_i2s);
 extern int send_tfa_cal_in_band(void *buf, int cmd_size);
 /*zhenyu.dong@MM.AUDIO.DRIVER.CODEC Add for distinguishing nxp smartpa */
 extern void set_smartpa_id(int id);
@@ -4396,6 +4395,30 @@ static void tfa98xx_fadein_work(struct work_struct *work)
 }
 #endif /* OPLUS_FEATURE_FADE_IN */
 
+static bool tfa98xx_selector_matches_device(struct tfa98xx *tfa98xx)
+{
+#ifdef OPLUS_ARCH_EXTENDS
+	/* For current 2-amp phone targets, enforce selection on every unmute. */
+	if (tfa98xx_device_count == 2) {
+		switch (tfa98xx_selector) {
+		case CHIP_SELECTOR_LEFT:
+			if (tfa98xx->tfa->channel != 0xff)
+				return tfa98xx->tfa->channel == 0;
+			return tfa98xx->i2c->addr == CHIP_LEFT_ADDR;
+		case CHIP_SELECTOR_RIGHT:
+			if (tfa98xx->tfa->channel != 0xff)
+				return tfa98xx->tfa->channel == 1;
+			return tfa98xx->i2c->addr == CHIP_RIGHT_ADDR;
+		default:
+			return true;
+		}
+	}
+#endif
+
+	/* Keep existing behavior on non-2PA targets. */
+	return (tfa98xx->flags & TFA98XX_FLAG_CHIP_SELECTED) != 0;
+}
+
 static void tfa98xx_dsp_init_work(struct work_struct *work)
 {
 	struct tfa98xx *tfa98xx =
@@ -4850,9 +4873,20 @@ static int tfa98xx_mute(struct snd_soc_dai *dai, int mute, int stream)
 					   &tfa98xx->init_work, 0);
 #else /* OPLUS_ARCH_EXTENDS */
 		if (tfa98xx->dsp_init != TFA98XX_DSP_INIT_PENDING) {
-			dev_info(&tfa98xx->i2c->dev, "tfa98xx->flags:0x%x\n",
+			bool chip_selected =
+				tfa98xx_selector_matches_device(tfa98xx);
+
+			if (chip_selected)
+				tfa98xx->flags |= TFA98XX_FLAG_CHIP_SELECTED;
+			else
+				tfa98xx->flags &= ~TFA98XX_FLAG_CHIP_SELECTED;
+
+			dev_info(&tfa98xx->i2c->dev,
+				 "selector:%d chip_selected:%d flags:0x%x\n",
+				 tfa98xx_selector, chip_selected,
 				 tfa98xx->flags);
-			if (tfa98xx->flags & TFA98XX_FLAG_CHIP_SELECTED) {
+
+			if (chip_selected) {
 				tfa98xx_dsp_init(tfa98xx);
 			}
 		}
@@ -5437,12 +5471,7 @@ static int tfa98xx_i2c_probe(struct i2c_client *i2c,
 	if (ret) {
 		pr_info("no defined tfa_use_i2s, use primary i2s");
 	} else {
-		extend_set_tfa_i2s = symbol_request(set_tfa_i2s);
-		if (extend_set_tfa_i2s) {
-			extend_set_tfa_i2s(tfa_i2s);
-		} else {
-			pr_info("no defined Function:set_tfa_i2s, use primary i2s");
-		}
+		set_tfa_i2s(tfa_i2s);
 	}
 #endif /*OPLUS_FEATURE_TFA98XX_VI_FEEDBACK*/
 

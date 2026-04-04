@@ -973,11 +973,8 @@ static int dmic_4_5_gpio_cnt;
 
 #ifdef OPLUS_ARCH_EXTENDS
 void extend_codec_i2s_be_dailinks(struct snd_soc_dai_link *dailink,
-				  size_t size);
-static void (*extend_i2s_be_dailinks_func)(struct snd_soc_dai_link *dailink,
-					   size_t size);
+				 size_t size);
 #endif /* OPLUS_ARCH_EXTENDS */
-
 static void *def_wcd_mbhc_cal(void);
 
 /*
@@ -8013,14 +8010,10 @@ static struct snd_soc_card *populate_snd_card_dailinks(struct device *dev)
 		} else {
 			if (mi2s_audio_intf) {
 #ifdef OPLUS_ARCH_EXTENDS
-				extend_i2s_be_dailinks_func = symbol_request(
-					extend_codec_i2s_be_dailinks);
-				if (extend_i2s_be_dailinks_func) {
-					extend_i2s_be_dailinks_func(
-						msm_mi2s_be_dai_links,
-						ARRAY_SIZE(
-							msm_mi2s_be_dai_links));
-				}
+				extend_codec_i2s_be_dailinks(
+					msm_mi2s_be_dai_links,
+					ARRAY_SIZE(
+						msm_mi2s_be_dai_links));
 #endif /* OPLUS_ARCH_EXTENDS */
 				memcpy(msm_kona_dai_links + total_links,
 					msm_mi2s_be_dai_links,
@@ -8082,13 +8075,9 @@ static struct snd_soc_card *populate_snd_card_dailinks(struct device *dev)
 		if (!rc && val) {
 #ifdef OPLUS_ARCH_EXTENDS
 			/* Add for oplus extend aduio which use tdm */
-			extend_i2s_be_dailinks_func =
-				symbol_request(extend_codec_i2s_be_dailinks);
-			if (extend_i2s_be_dailinks_func) {
-				extend_i2s_be_dailinks_func(
-					msm_tdm_be_dai_links,
-					ARRAY_SIZE(msm_tdm_be_dai_links));
-			}
+			extend_codec_i2s_be_dailinks(
+				msm_tdm_be_dai_links,
+				ARRAY_SIZE(msm_tdm_be_dai_links));
 			dev_err(dev,
 				"%s: msm_tdm_be_dai_links enter val = %d\n",
 				__func__, val);
@@ -8171,13 +8160,18 @@ static int msm_wsa881x_init(struct snd_soc_component *component)
 			wsa883x_set_channel_map(component, &spkleft_ports[0],
 					WSA881X_MAX_SWR_PORTS, &ch_mask[0],
 					&ch_rate[0], &spkleft_port_types[0]);
-		else
+		else if (strnstr(component->name, "wsa881x", sizeof(component->name)))
 			wsa881x_set_channel_map(component, &spkleft_ports[0],
 					WSA881X_MAX_SWR_PORTS, &ch_mask[0],
 					&ch_rate[0], &spkleft_port_types[0]);
 		if (dapm->component) {
-			snd_soc_dapm_ignore_suspend(dapm, "SpkrLeft IN");
-			snd_soc_dapm_ignore_suspend(dapm, "SpkrLeft SPKR");
+			if (strnstr(component->name, "tfa98xx", sizeof(component->name))) {
+				snd_soc_dapm_ignore_suspend(dapm, "AIF IN");
+				snd_soc_dapm_ignore_suspend(dapm, "OUTL");
+			} else {
+				snd_soc_dapm_ignore_suspend(dapm, "IN");
+				snd_soc_dapm_ignore_suspend(dapm, "SPKR");
+			}
 		}
 	} else if (!strcmp(component->name_prefix, "SpkrRight")) {
 		dev_dbg(component->dev, "%s: setting right ch map to codec %s\n",
@@ -8186,15 +8180,21 @@ static int msm_wsa881x_init(struct snd_soc_component *component)
 			wsa883x_set_channel_map(component, &spkright_ports[0],
 					WSA881X_MAX_SWR_PORTS, &ch_mask[0],
 					&ch_rate[0], &spkright_port_types[0]);
-		else
+		else if (strnstr(component->name, "wsa881x", sizeof(component->name)))
 			wsa881x_set_channel_map(component, &spkright_ports[0],
 					WSA881X_MAX_SWR_PORTS, &ch_mask[0],
 					&ch_rate[0], &spkright_port_types[0]);
 		if (dapm->component) {
-			snd_soc_dapm_ignore_suspend(dapm, "SpkrRight IN");
-			snd_soc_dapm_ignore_suspend(dapm, "SpkrRight SPKR");
+			if (strnstr(component->name, "tfa98xx", sizeof(component->name))) {
+				snd_soc_dapm_ignore_suspend(dapm, "AIF IN");
+				snd_soc_dapm_ignore_suspend(dapm, "OUTL");
+			} else {
+				snd_soc_dapm_ignore_suspend(dapm, "IN");
+				snd_soc_dapm_ignore_suspend(dapm, "SPKR");
+			}
 		}
-	} else {
+	}
+ else {
 		dev_err(component->dev, "%s: wrong codec name %s\n", __func__,
 			component->name);
 		ret = -EINVAL;
@@ -8215,7 +8215,7 @@ static int msm_wsa881x_init(struct snd_soc_component *component)
 	if (strnstr(component->name, "wsa883x", sizeof(component->name)))
 		wsa883x_codec_info_create_codec_entry(pdata->codec_root,
 						      component);
-	else
+	else if (strnstr(component->name, "wsa881x", sizeof(component->name)))
 		wsa881x_codec_info_create_codec_entry(pdata->codec_root,
 						      component);
 err:

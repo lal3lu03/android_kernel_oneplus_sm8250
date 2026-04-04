@@ -132,6 +132,7 @@
 		ois_module,vendor = <1>;
 		ois_actuator,vednor = <1>;
 		ois,fw = <1>;
+		download,fw = <1>;
 		status = "ok";
 	};
 
@@ -490,6 +491,7 @@
 		ois_module,vendor = <1>;
 		ois_actuator,vednor = <2>;
 		ois,fw = <1>;
+		download,fw = <1>;
 		status = "ok";
 	};
 
